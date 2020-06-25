@@ -3,7 +3,7 @@ import { GraphQLNonNull, GraphQLString } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import { cloneDeep, set } from 'lodash';
 
-import { sequelize } from '../../../models';
+import models, { sequelize } from '../../../models';
 import { Forbidden, Unauthorized } from '../../errors';
 import { AccountReferenceInput, fetchAccountWithReference } from '../input/AccountReferenceInput';
 import { Account } from '../interface/Account';
@@ -83,11 +83,15 @@ const accountMutations = {
           throw new Forbidden();
         }
 
-        console.log(account);
+        const user = await models.User.findOne({ where: { id: account.CreatedByUserId } });
 
-        // const settings = account.settings ? cloneDeep(account.settings) : {};
-        // set(settings, args.key, args.value);
-        // return account.update({ settings }, { transaction });
+        if (user.twoFactorAuthToken !== null) {
+          throw new Unauthorized('This account already has 2FA enabled.');
+        }
+
+        await user.update({ twoFactorAuthToken: args.secret });
+
+        return account;
       });
     },
   },
