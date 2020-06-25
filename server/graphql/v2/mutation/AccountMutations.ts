@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt';
 import { GraphQLNonNull, GraphQLString } from 'graphql';
 import GraphQLJSON from 'graphql-type-json';
 import { cloneDeep, set } from 'lodash';
@@ -8,11 +7,6 @@ import { Forbidden, Unauthorized } from '../../errors';
 import { AccountReferenceInput, fetchAccountWithReference } from '../input/AccountReferenceInput';
 import { Account } from '../interface/Account';
 import AccountSettingsKey from '../scalar/AccountSettingsKey';
-
-/**
- * Constants.
- */
-const SALT_WORK_FACTOR = 10;
 
 const accountMutations = {
   editAccountSetting: {
