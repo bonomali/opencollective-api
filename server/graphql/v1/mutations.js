@@ -515,6 +515,9 @@ const mutations = {
       id: {
         type: new GraphQLNonNull(GraphQLInt),
       },
+      updateNotificationAudience: {
+        type: GraphQLString,
+      },
     },
     resolve(_, args, req) {
       return updateMutations.publishUpdate(_, args, req);

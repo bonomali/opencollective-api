@@ -414,6 +414,7 @@ export const UpdateInputType = new GraphQLInputObjectType({
     title: { type: GraphQLString },
     image: { type: GraphQLString },
     isPrivate: { type: GraphQLBoolean },
+    updateNotificationAudience: { type: GraphQLString },
     makePublicOn: { type: IsoDateString },
     markdown: { type: GraphQLString },
     html: { type: GraphQLString },

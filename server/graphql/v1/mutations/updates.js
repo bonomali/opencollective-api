@@ -31,6 +31,7 @@ export async function createUpdate(_, args, req) {
     html: stripTags(args.update.html),
     CollectiveId,
     isPrivate: args.update.isPrivate,
+    updateNotificationAudience: args.update.updateNotificationAudience,
     TierId: get(args, 'update.tier.id'),
     CreatedByUserId: req.remoteUser.id,
     FromCollectiveId: req.remoteUser.CollectiveId,
@@ -60,7 +61,7 @@ export async function editUpdate(_, args, req) {
 
 export async function publishUpdate(_, args, req) {
   let update = await fetchUpdate(args.id);
-  update = await update.publish(req.remoteUser);
+  update = await update.publish(req.remoteUser, args.updateNotificationAudience);
   const collective = await models.Collective.findByPk(update.CollectiveId);
   purgeCacheForPage(`/${collective.slug}`);
   return update;

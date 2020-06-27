@@ -201,14 +201,48 @@ async function notifyByEmail(activity) {
 
     case activityType.COLLECTIVE_UPDATE_PUBLISHED:
       twitter.tweetActivity(activity);
-      activity.data.update = await models.Update.findByPk(activity.data.update.id, {
-        include: [{ model: models.Collective, as: 'fromCollective' }],
-      });
-      activity.data.update = activity.data.update.info;
-      notifyMembersOfCollective(activity.data.update.CollectiveId, activity, {
-        from: `${activity.data.collective.name}
-        <no-reply@${activity.data.collective.slug}.opencollective.com>`,
-      });
+
+      activity.data.collective = await models.Collective.findByPk(activity.data.collective.id);
+      const hostedCollectives = activity.data.collective.getHostedCollectives();
+
+      if (activity.data.collective.info.isHostAccount) {
+        switch (activity.data.update.updateNotificationAudience) {
+          case 'Hosted Collective Admins':
+            hostedCollectives.map(collective => {
+              notifyAdminsOfCollective(collective.id, activity, {
+                from: `${activity.data.collective.name}
+                <no-reply@${activity.data.collective.slug}.opencllective.com>`,
+              });
+            });
+            break;
+
+          case 'Financial Contributors':
+            notifyMembersOfCollective(activity.data.update.CollectiveId, activity, {
+              from: `${activity.data.collective.name}
+              <no-reply@${activity.data.collective.slug}.opencollective.com>`,
+            });
+            break;
+
+          case 'Everyone':
+            hostedCollectives.map(collective => {
+              notifyAdminsOfCollective(collective.id, activity, {
+                from: `${activity.data.collective.name}
+                <no-reply@${activity.data.collective.slug}.opencllective.com>`,
+              });
+            });
+
+            notifyMembersOfCollective(activity.data.update.CollectiveId, activity, {
+              from: `${activity.data.collective.name}
+              <no-reply@${activity.data.collective.slug}.opencollective.com>`,
+            });
+            break;
+        }
+      } else {
+        notifyMembersOfCollective(activity.data.update.CollectiveId, activity, {
+          from: `${activity.data.collective.name}
+          <no-reply@${activity.data.collective.slug}.opencollective.com>`,
+        });
+      }
       break;
 
     case activityType.SUBSCRIPTION_CANCELED:

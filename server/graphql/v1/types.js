@@ -1014,6 +1014,12 @@ export const UpdateType = new GraphQLObjectType({
           return update.isPrivate;
         },
       },
+      updateNotificationAudience: {
+        type: GraphQLString,
+        resolve(update) {
+          return update.updateNotificationAudience;
+        },
+      },
       makePublicOn: {
         type: IsoDateString,
         resolve(update) {

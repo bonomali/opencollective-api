@@ -535,6 +535,7 @@ export default function (Sequelize, DataTypes) {
             createdAt: this.createdAt,
             updatedAt: this.updatedAt,
             isActive: this.isActive,
+            isHostAccount: this.isHostAccount,
             slug: this.slug,
             tiers: this.tiers,
             settings: this.settings,
