@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import { get, isNil, omitBy } from 'lodash';
 import passport from 'passport';
 import request from 'request-promise';
+import speakeasy from 'speakeasy';
 
 import * as connectedAccounts from '../controllers/connectedAccounts';
 import errors from '../lib/errors';
@@ -377,15 +378,24 @@ export function mustBeLoggedIn(req, res, next) {
  * and if they do, we challenge them to auth with it during the login flow
  */
 export const twoFactorAuthCheck = (req, res, next) => {
-  const { user } = req.body;
-  let twoFactorAuthToken;
-  return User.findOne({ where: { email: user.email.toLowerCase() } })
+  const { TOTPCode } = req.body;
+  const { updateToken } = res.locals;
+  const email = req.remoteUser.email;
+  let twoFactorAuthToken, verified;
+  return User.findOne({ where: { email: email.toLowerCase() } })
     .then(u => {
       twoFactorAuthToken = u.twoFactorAuthToken;
-      console.log(user, u.twoFactorAuthToken);
     })
     .then(() => {
-      const response = { yeet: twoFactorAuthToken };
+      verified = speakeasy.totp.verify({
+        secret: twoFactorAuthToken,
+        encoding: 'base32',
+        token: TOTPCode,
+      });
+      if (!verified) {
+        return next(new Unauthorized('2FA failed'));
+      }
+      const response = { token: updateToken };
       return response;
     })
     .then(response => res.send(response))

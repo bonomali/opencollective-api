@@ -86,8 +86,7 @@ export default app => {
    * User reset password or new token flow (no jwt verification) or 2FA
    */
   app.post('/users/signin', required('user'), users.signin);
-  app.post('/users/update-token', authentication.mustBeLoggedIn, users.updateToken);
-  app.post('/users/two-factor-auth', authentication.twoFactorAuthCheck);
+  app.post('/users/update-token', authentication.mustBeLoggedIn, users.updateToken, authentication.twoFactorAuthCheck);
 
   /**
    * Moving forward, all requests will try to authenticate the user if there is a JWT token provided

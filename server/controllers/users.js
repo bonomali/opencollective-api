@@ -73,7 +73,22 @@ export const signin = (req, res, next) => {
  *
  * This can be used right after the first login
  */
-export const updateToken = async (req, res) => {
+export const updateToken = async (req, res, next) => {
+  const { checkingTwoFactorAuth, TOTPCode } = req.body;
+
+  // the first time we try, we need to just check if the user has 2FA
+  if (req.remoteUser.twoFactorAuthToken !== null && !checkingTwoFactorAuth) {
+    return res.send({ twoFactorAuthEnabled: true });
+  }
+
+  // we process a new token the 1st time if no 2FA, 2nd time if there is
   const token = req.remoteUser.jwt({}, auth.TOKEN_EXPIRATION_SESSION);
-  res.send({ token });
+
+  // if there is a 2FA code we need to verify it before returning the token
+  if (TOTPCode) {
+    res.locals.updateToken = token;
+    return next();
+  } else {
+    res.send({ token });
+  }
 };
