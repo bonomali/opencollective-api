@@ -371,3 +371,23 @@ export function mustBeLoggedIn(req, res, next) {
     }
   });
 }
+
+/**
+ * Checks if the user has two-factor authentication enabled on their account,
+ * and if they do, we challenge them to auth with it during the login flow
+ */
+export const twoFactorAuthCheck = (req, res, next) => {
+  const { user } = req.body;
+  let twoFactorAuthToken;
+  return User.findOne({ where: { email: user.email.toLowerCase() } })
+    .then(u => {
+      twoFactorAuthToken = u.twoFactorAuthToken;
+      console.log(user, u.twoFactorAuthToken);
+    })
+    .then(() => {
+      const response = { yeet: twoFactorAuthToken };
+      return response;
+    })
+    .then(response => res.send(response))
+    .catch(next);
+};
