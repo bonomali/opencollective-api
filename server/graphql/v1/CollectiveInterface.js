@@ -854,9 +854,6 @@ export const CollectiveInterfaceType = new GraphQLInterfaceType({
       },
       connectedAccounts: { type: new GraphQLList(ConnectedAccountType) },
       plan: { type: PlanType },
-      hasTwoFactorAuth: {
-        type: GraphQLBoolean,
-      },
     };
   },
 });
@@ -1847,19 +1844,6 @@ const CollectiveFields = () => {
       type: CollectiveStatsType,
       resolve(collective) {
         return collective;
-      },
-    },
-    hasTwoFactorAuth: {
-      type: GraphQLBoolean,
-      async resolve(collective) {
-        const user = await models.User.findOne({
-          where: { CollectiveId: collective.id },
-        });
-        if (user.twoFactorAuthToken) {
-          return true;
-        } else {
-          return false;
-        }
       },
     },
   };

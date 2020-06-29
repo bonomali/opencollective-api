@@ -224,19 +224,6 @@ const accountFieldsDefinition = () => ({
       return collective;
     },
   },
-  hasTwoFactorAuth: {
-    type: GraphQLBoolean,
-    async resolve(collective) {
-      const user = await models.User.findOne({
-        where: { CollectiveId: collective.id },
-      });
-      if (user.twoFactorAuthToken) {
-        return true;
-      } else {
-        return false;
-      }
-    },
-  },
 });
 
 export const Account = new GraphQLInterfaceType({

@@ -56,7 +56,7 @@ const accountMutations = {
         type: new GraphQLNonNull(AccountReferenceInput),
         description: 'Account that will have 2FA added to it',
       },
-      secret: {
+      token: {
         type: new GraphQLNonNull(GraphQLString),
         description: 'The generated secret to save to the Account',
       },
@@ -66,27 +66,21 @@ const accountMutations = {
         throw new Unauthorized();
       }
 
-      return sequelize.transaction(async transaction => {
-        const account = await fetchAccountWithReference(args.account, {
-          dbTransaction: transaction,
-          lock: true,
-          throwIfMissing: true,
-        });
+      const account = await fetchAccountWithReference(args.account);
 
-        if (!req.remoteUser.isAdminOfCollective(account)) {
-          throw new Forbidden();
-        }
+      if (!req.remoteUser.isAdminOfCollective(account)) {
+        throw new Forbidden();
+      }
 
-        const user = await models.User.findOne({ where: { id: account.CreatedByUserId } });
+      const user = await models.User.findOne({ where: { id: account.CreatedByUserId } });
 
-        if (user.twoFactorAuthToken !== null) {
-          throw new Unauthorized('This account already has 2FA enabled.');
-        }
+      if (user.twoFactorAuthToken !== null) {
+        throw new Unauthorized('This account already has 2FA enabled.');
+      }
 
-        await user.update({ twoFactorAuthToken: args.secret });
+      await user.update({ twoFactorAuthToken: args.token });
 
-        return account;
-      });
+      return account;
     },
   },
 };
